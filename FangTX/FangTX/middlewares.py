@@ -9,7 +9,7 @@ from scrapy import signals
 import random
 #引入要继承的类
 from scrapy.downloadermiddlewares.useragent import UserAgentMiddleware
-from scrapy.downloadermiddlewares.httpproxy import  HttpProxyMiddleware
+
 
 
 
@@ -100,15 +100,12 @@ class ChangeUserAgentMiddleware(UserAgentMiddleware):
 # 随机使用IP代理 防止爬虫被网站服务器拒绝
 # 在setting.py中先禁用默认的 UserAgentMiddleware
 # 定义一个自动选择类，继承UserAgentMiddleware，然后重写其方法
-class ChangeIpProxyMiddleware(HttpProxyMiddleware):
+class ChangeIpProxyMiddleware(object):
 
     # 定义一个IP地址池
     # 后续可以用程序实现自动添加
     IP_Pools = [\
-        '60.255.186.169:8888',\
-        '124.42.7.103:80',\
-        '101.255.51.222:8080',\
-        '45.252.54.22:8080',\
+        '124.133.230.254:80'
 
 
     ]
@@ -117,15 +114,22 @@ class ChangeIpProxyMiddleware(HttpProxyMiddleware):
     # 重写方法
     @classmethod
     def process_request(self, request, spider):
-        # 随机选择IP代理
-        ip_proxy = random.choice(self.IP_Pools)
-        # 如果存在
-        print(ip_proxy)
-        if ip_proxy:
-            print('当前ip: ' + ip_proxy)
-            # 设置代理给爬虫
-            request.meta['proxy'] = "http://" + ip_proxy
 
+        with open('./ip_port.txt') as f:
 
+            for text in f.readlines():
+                text = text.strip()
+                self.ip_pool.append(text)
 
-    pass
+        ip = random.choice(self.ip_pool)
+        if ip:
+            # 将爬虫的请求带上代理
+            # 在setting.py中加上相应的middleware
+            request.meta['proxy'] = 'http://' + ip
+
+            pass
+
+    ip_pool = [
+        '124.133.230.254:80',
+
+    ]
